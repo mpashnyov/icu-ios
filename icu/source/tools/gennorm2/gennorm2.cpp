@@ -142,7 +142,7 @@ main(int argc, char* argv[]) {
 
 #else
 
-    LocalPointer<Normalizer2DataBuilder> builder(new Normalizer2DataBuilder(errorCode), errorCode);
+    LocalPointer<Normalizer2DataBuilder> builder(new Normalizer2DataBuilder(errorCode));
     errorCode.assertSuccess();
 
     if(options[UNICODE_VERSION].doesOccur) {

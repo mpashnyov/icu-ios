@@ -1,6 +1,6 @@
 /*
  **********************************************************************
- *   Copyright (C) 1996-2016, International Business Machines
+ *   Copyright (C) 1996-2013, International Business Machines
  *   Corporation and others.  All Rights Reserved.
  **********************************************************************
  *
@@ -113,7 +113,7 @@ static const ILcidPosixElement locmap_ ## id [] =
  * @param _posixID the full POSIX ID for this entry.
  */
 #define ILCID_POSIX_MAP(_posixID) \
-    {UPRV_LENGTHOF(locmap_ ## _posixID), locmap_ ## _posixID}
+    {sizeof(locmap_ ## _posixID)/sizeof(ILcidPosixElement), locmap_ ## _posixID}
 
 /*
 ////////////////////////////////////////////
@@ -196,8 +196,7 @@ ILCID_POSIX_SUBTABLE(bn) {
 ILCID_POSIX_SUBTABLE(bo) {
     {0x51,   "bo"},
     {0x0851, "bo_BT"},
-    {0x0451, "bo_CN"},
-    {0x0c51, "dz_BT"}
+    {0x0451, "bo_CN"}
 };
 
 ILCID_POSIX_ELEMENT_ARRAY(0x047e, br, br_FR)
@@ -280,7 +279,6 @@ ILCID_POSIX_SUBTABLE(es) {
     {0x340a, "es_CL"},
     {0x240a, "es_CO"},
     {0x140a, "es_CR"},
-    {0x5c0a, "es_CU"},
     {0x1c0a, "es_DO"},
     {0x300a, "es_EC"},
     {0x0c0a, "es_ES"},      /*Modern sort.*/
@@ -320,8 +318,7 @@ ILCID_POSIX_SUBTABLE(fa_AF) {
 ILCID_POSIX_SUBTABLE(ff) {
     {0x67,   "ff"},
     {0x7c67, "ff_Latn"},
-    {0x0867, "ff_Latn_SN"},
-    {0x0467, "ff_NG"}
+    {0x0867, "ff_Latn_SN"}
 };
 
 ILCID_POSIX_ELEMENT_ARRAY(0x040b, fi, fi_FI)
@@ -401,13 +398,6 @@ ILCID_POSIX_SUBTABLE(hr) {
     {0x281a, "sr_Cyrl_RS"},
     {0x6c1a, "sr_Cyrl"},    /* It's 0x1a or 0x0c1a, pick one to make the test program happy. */
     {0x7c1a, "sr"}          /* In CLDR sr is sr_Cyrl. */
-};
-
-ILCID_POSIX_SUBTABLE(hsb) {
-    {0x2E,   "hsb"},
-    {0x042E, "hsb_DE"},
-    {0x082E, "dsb_DE"},
-    {0x7C2E, "dsb"},
 };
 
 ILCID_POSIX_ELEMENT_ARRAY(0x040e, hu, hu_HU)
@@ -555,35 +545,7 @@ ILCID_POSIX_SUBTABLE(qu) {
     {0x0C6b, "quz_PE"}
 };
 
-ILCID_POSIX_SUBTABLE(quc) {
-    {0x93,   "quc"},
-    {0x0493, "quc_CO"},
-    /*
-        "quc_Latn_GT" is an exceptional case. Language ID of "quc"
-        is 0x93, but LCID of "quc_Latn_GT" is 0x486, which should be
-        under the group of "qut". "qut" is a retired ISO 639-3 language
-        code for West Central Quiche, and merged to "quc".
-        It looks Windows previously reserved "qut" for K'iche', but,
-        decided to use "quc" when adding a locale for K'iche' (Guatemala).
-
-        This data structure used here assumes language ID bits in
-        LCID is unique for alphabetic language code. But this is not true
-        for "quc_Latn_GT". If we don't have the data below, LCID look up
-        by alphabetic locale ID (POSIX) will fail. The same entry is found
-        under "qut" below, which is required for reverse look up.
-    */
-    {0x0486, "quc_Latn_GT"}
-};
-
-ILCID_POSIX_SUBTABLE(qut) {
-    {0x86,   "qut"},
-    {0x0486, "qut_GT"},
-    /*
-        See the note in "quc" above.
-    */
-    {0x0486, "quc_Latn_GT"}
-};
-
+ILCID_POSIX_ELEMENT_ARRAY(0x0486, qut, qut_GT) /* qut is an ISO-639-3 code */
 ILCID_POSIX_ELEMENT_ARRAY(0x0417, rm, rm_CH)
 
 ILCID_POSIX_SUBTABLE(ro) {
@@ -609,7 +571,6 @@ ILCID_POSIX_ELEMENT_ARRAY(0x0485, sah,sah_RU)
 ILCID_POSIX_SUBTABLE(sd) {
     {0x59,   "sd"},
     {0x0459, "sd_IN"},
-    {0x0459, "sd_Deva_IN"},
     {0x0859, "sd_PK"}
 };
 
@@ -692,7 +653,6 @@ ILCID_POSIX_SUBTABLE(tzm) {
     {0x7c5f, "tzm_Latn"},
     {0x085f, "tzm_Latn_DZ"},
     {0x105f, "tzm_Tfng_MA"},
-    {0x045f, "tzm_Arab_MA"},
     {0x045f, "tmz"}
 };
 
@@ -726,6 +686,16 @@ ILCID_POSIX_SUBTABLE(ve) { /* TODO: Verify the country */
 };
 
 ILCID_POSIX_ELEMENT_ARRAY(0x042a, vi, vi_VN)
+
+ILCID_POSIX_SUBTABLE(wen) {
+    {0x2E,   "wen"},
+    {0x042E, "wen_DE"},
+    {0x042E, "hsb_DE"},
+    {0x082E, "dsb_DE"},
+    {0x7C2E, "dsb"},
+    {0x2E,   "hsb"}
+};
+
 ILCID_POSIX_ELEMENT_ARRAY(0x0488, wo, wo_SN)
 ILCID_POSIX_ELEMENT_ARRAY(0x0434, xh, xh_ZA)
 ILCID_POSIX_ELEMENT_ARRAY(0x043d, yi, yi)
@@ -809,7 +779,6 @@ static const ILcidPosixMap gPosixIDmap[] = {
     ILCID_POSIX_MAP(he),    /*  he  Hebrew (formerly iw)      0x0d */
     ILCID_POSIX_MAP(hi),    /*  hi  Hindi                     0x39 */
     ILCID_POSIX_MAP(hr),    /*  *   Croatian and others       0x1a */
-    ILCID_POSIX_MAP(hsb),   /*  hsb Upper Sorbian             0x2e */
     ILCID_POSIX_MAP(hu),    /*  hu  Hungarian                 0x0e */
     ILCID_POSIX_MAP(hy),    /*  hy  Armenian                  0x2b */
     ILCID_POSIX_MAP(ibb),   /*  ibb Ibibio - Nigeria          0x69 */
@@ -861,7 +830,6 @@ static const ILcidPosixMap gPosixIDmap[] = {
     ILCID_POSIX_MAP(ps),    /*  ps  Pashto                    0x63 */
     ILCID_POSIX_MAP(pt),    /*  pt  Portuguese                0x16 */
     ILCID_POSIX_MAP(qu),    /*  qu  Quechua                   0x6B */
-    ILCID_POSIX_MAP(quc),   /*  quc K'iche                    0x93 */
     ILCID_POSIX_MAP(qut),   /*  qut K'iche                    0x86 */
     ILCID_POSIX_MAP(rm),    /*  rm  Raeto-Romance/Romansh     0x17 */
     ILCID_POSIX_MAP(ro),    /*  ro  Romanian                  0x18 */
@@ -900,6 +868,7 @@ static const ILcidPosixMap gPosixIDmap[] = {
     ILCID_POSIX_MAP(uz),    /*  uz  Uzbek                     0x43 */
     ILCID_POSIX_MAP(ve),    /*  ve  Venda                     0x33 */
     ILCID_POSIX_MAP(vi),    /*  vi  Vietnamese                0x2a */
+    ILCID_POSIX_MAP(wen),   /*  wen Sorbian                   0x2e */
     ILCID_POSIX_MAP(wo),    /*  wo  Wolof                     0x88 */
     ILCID_POSIX_MAP(xh),    /*  xh  Xhosa                     0x34 */
     ILCID_POSIX_MAP(yi),    /*  yi  Yiddish                   0x3d */
@@ -908,7 +877,7 @@ static const ILcidPosixMap gPosixIDmap[] = {
     ILCID_POSIX_MAP(zu),    /*  zu  Zulu                      0x35 */
 };
 
-static const uint32_t gLocaleCount = UPRV_LENGTHOF(gPosixIDmap);
+static const uint32_t gLocaleCount = sizeof(gPosixIDmap)/sizeof(ILcidPosixMap);
 
 /**
  * Do not call this function. It is called by hostID.
@@ -1022,7 +991,7 @@ uprv_convertToPosix(uint32_t hostid, char *posixID, int32_t posixIDCapacity, UEr
     int32_t tmpLen = 0;
     char locName[157];  /* ULOC_FULLNAME_CAPACITY */
 
-    tmpLen = GetLocaleInfoA(hostid, LOCALE_SNAME, (LPSTR)locName, UPRV_LENGTHOF(locName));
+    tmpLen = GetLocaleInfoA(hostid, LOCALE_SNAME, (LPSTR)locName, sizeof(locName)/sizeof(locName[0]));
     if (tmpLen > 1) {
         /* Windows locale name may contain sorting variant, such as "es-ES_tradnl".
            In such case, we need special mapping data found in the hardcoded table

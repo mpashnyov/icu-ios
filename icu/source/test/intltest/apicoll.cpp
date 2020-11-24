@@ -1,6 +1,6 @@
 /********************************************************************
  * COPYRIGHT:
- * Copyright (c) 1997-2016, International Business Machines Corporation and
+ * Copyright (c) 1997-2014, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 //===============================================================================
@@ -191,7 +191,6 @@ CollationAPITest::TestProperty(/* char* par */)
     doAssert((col->getStrength() == Collator::TERTIARY), "collation object's strength is not tertiary difference");
     doAssert((col->getStrength() != Collator::PRIMARY), "collation object's strength is primary difference");
     doAssert((col->getStrength() != Collator::SECONDARY), "collation object's strength is secondary difference");
-    delete col;
 
     logln("Create junk collation: ");
     Locale abcd("ab", "CD", "");
@@ -202,15 +201,26 @@ CollationAPITest::TestProperty(/* char* par */)
     if (U_FAILURE(success))
     {
         errln("Junk collation creation failed, should at least return default.");
+        delete col;
         return;
     }
 
-    doAssert(((RuleBasedCollator *)junk)->getRules().isEmpty(),
-               "The root collation should be returned for an unsupported language.");
+    delete col;
+    col = Collator::createInstance(success);
+    if (U_FAILURE(success))
+    {
+        errln("Creating default collator failed.");
+        delete junk;
+        return;
+    }
+
+    doAssert(((RuleBasedCollator *)col)->getRules() == ((RuleBasedCollator *)junk)->getRules(),
+               "The default collation should be returned.");
     Collator *frCol = Collator::createInstance(Locale::getCanadaFrench(), success);
     if (U_FAILURE(success))
     {
         errln("Creating fr_CA collator failed.");
+        delete col;
         delete junk;
         return;
     }
@@ -224,6 +234,7 @@ CollationAPITest::TestProperty(/* char* par */)
     doAssert((*frCol == *aFrCol), "The cloning of a fr_CA collator failed.");
     logln("Collator property test ended.");
 
+    delete col;
     delete frCol;
     delete aFrCol;
     delete junk;
@@ -997,6 +1008,9 @@ CollationAPITest::TestCompare(/* char* par */)
 void
 CollationAPITest::TestGetAll(/* char* par */)
 {
+    if (logKnownIssue("10774","Side effects from utility/LocaleTest/TestGetLocale")) {
+        return;
+    }
     int32_t count1, count2;
     UErrorCode status = U_ZERO_ERROR;
 
@@ -1537,10 +1551,7 @@ void CollationAPITest::TestVariableTopSetting() {
   status = U_ZERO_ERROR;
   vt[0] = 0x24;  // dollar sign (currency symbol)
   uint32_t newVarTop = coll->setVariableTop(vt, 1, status);
-  if(U_FAILURE(status)) {
-    errln("setVariableTop(dollar sign) failed: %s", u_errorName(status));
-    return;
-  }
+
   if(newVarTop != coll->getVariableTop(status)) {
     errln("setVariableTop(dollar sign) != following getVariableTop()");
   }
@@ -1650,7 +1661,7 @@ void CollationAPITest::TestGetLocale() {
   u_unescape(rules, rlz, 256);
 
   /* test opening collators for different locales */
-  for(i = 0; i<UPRV_LENGTHOF(testStruct); i++) {
+  for(i = 0; i<(int32_t)UPRV_LENGTHOF(testStruct); i++) {
     status = U_ZERO_ERROR;
     coll = Collator::createInstance(testStruct[i].requestedLocale, status);
     if(U_FAILURE(status)) {
@@ -1696,23 +1707,28 @@ void CollationAPITest::TestGetLocale() {
     delete coll;
   }
 
-  /* completely non-existent locale for collator should get a root collator */
+  /* completely non-existant locale for collator should get a default collator */
   {
-    LocalPointer<Collator> coll(Collator::createInstance("blahaha", status));
+    Collator *defaultColl = Collator::createInstance((const Locale)NULL, status);
+    coll = Collator::createInstance("blahaha", status);
     if(U_FAILURE(status)) {
       errln("Failed to open collator with %s", u_errorName(status));
+      delete coll;
+      delete defaultColl;
       return;
     }
-    Locale valid = coll->getLocale(ULOC_VALID_LOCALE, status);
-    const char *name = valid.getName();
-    if(*name != 0 && strcmp(name, "root") != 0) {
-      errln("Valid locale for nonexisting-locale collator is \"%s\" not root", name);
+    if(coll->getLocale(ULOC_VALID_LOCALE, status) !=
+      defaultColl->getLocale(ULOC_VALID_LOCALE, status)) {
+      errln("Valid locale for nonexisting locale locale collator differs "
+        "from valid locale for default collator");
     }
-    Locale actual = coll->getLocale(ULOC_ACTUAL_LOCALE, status);
-    name = actual.getName();
-    if(*name != 0 && strcmp(name, "root") != 0) {
-      errln("Actual locale for nonexisting-locale collator is \"%s\" not root", name);
+    if(coll->getLocale(ULOC_ACTUAL_LOCALE, status) !=
+      defaultColl->getLocale(ULOC_ACTUAL_LOCALE, status)) {
+      errln("Actual locale for nonexisting locale locale collator differs "
+        "from actual locale for default collator");
     }
+    delete coll;
+    delete defaultColl;
   }
 
 
@@ -1838,7 +1854,7 @@ void CollationAPITest::TestBounds(void) {
 
 
     int32_t i = 0, j = 0, k = 0, buffSize = 0, skSize = 0, lowerSize = 0, upperSize = 0;
-    int32_t arraySize = UPRV_LENGTHOF(tests);
+    int32_t arraySize = sizeof(tests)/sizeof(tests[0]);
 
     (void)lowerSize;  // Suppress unused variable warnings.
     (void)upperSize;
@@ -1866,12 +1882,12 @@ void CollationAPITest::TestBounds(void) {
     }
 
 
-    for(i = 0; i<UPRV_LENGTHOF(test); i++) {
+    for(i = 0; i<(int32_t)(sizeof(test)/sizeof(test[0])); i++) {
         buffSize = u_unescape(test[i], buffer, 512);
         skSize = coll->getSortKey(buffer, buffSize, sortkey, 512);
         lowerSize = ucol_getBound(sortkey, skSize, UCOL_BOUND_LOWER, 1, lower, 512, &status);
         upperSize = ucol_getBound(sortkey, skSize, UCOL_BOUND_UPPER_LONG, 1, upper, 512, &status);
-        for(j = i+1; j<UPRV_LENGTHOF(test); j++) {
+        for(j = i+1; j<(int32_t)(sizeof(test)/sizeof(test[0])); j++) {
             buffSize = u_unescape(test[j], buffer, 512);
             skSize = coll->getSortKey(buffer, buffSize, sortkey, 512);
             if(strcmp((const char *)lower, (const char *)sortkey) > 0) {

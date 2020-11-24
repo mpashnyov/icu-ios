@@ -1,11 +1,11 @@
 /*
  *
- * (C) Copyright IBM Corp. 1998-2015. All Rights Reserved.
+ * (C) Copyright IBM Corp. 1998-2014. All Rights Reserved.
  *
  * WARNING: THIS FILE IS MACHINE GENERATED. DO NOT HAND EDIT IT UNLESS
  * YOU REALLY KNOW WHAT YOU'RE DOING.
  *
- * Generated on: 04/27/2015 10:39:37 AM PDT
+ * Generated on: 04/08/2014 03:20:04 PM PDT
  */
 
 #include "LETypes.h"
@@ -91,7 +91,7 @@ const LETag OpenTypeLayoutEngine::scriptTags[] = {
     hansScriptTag, /* 'hans' (HANS) */
     hantScriptTag, /* 'hant' (HANT) */
     hmngScriptTag, /* 'hmng' (PAHAWH_HMONG) */
-    hungScriptTag, /* 'hung' (OLD_HUNGARIAN) */
+    hungScriptTag, /* 'hung' (HUNG) */
     indsScriptTag, /* 'inds' (INDS) */
     javaScriptTag, /* 'java' (JAVANESE) */
     kaliScriptTag, /* 'kali' (KAYAH_LI) */
@@ -127,7 +127,7 @@ const LETag OpenTypeLayoutEngine::scriptTags[] = {
     olckScriptTag, /* 'olck' (OL_CHIKI) */
     rjngScriptTag, /* 'rjng' (REJANG) */
     saurScriptTag, /* 'saur' (SAURASHTRA) */
-    sgnwScriptTag, /* 'sgnw' (SIGNWRITING) */
+    sgnwScriptTag, /* 'sgnw' (SGNW) */
     sundScriptTag, /* 'sund' (SUNDANESE) */
     moonScriptTag, /* 'moon' (MOON) */
     mteiScriptTag, /* 'mtei' (MEETEI_MAYEK) */
@@ -171,15 +171,15 @@ const LETag OpenTypeLayoutEngine::scriptTags[] = {
     takrScriptTag, /* 'takr' (TAKRI) */
     tangScriptTag, /* 'tang' (TANG) */
     woleScriptTag, /* 'wole' (WOLE) */
-    hluwScriptTag, /* 'hluw' (ANATOLIAN_HIEROGLYPHS) */
+    hluwScriptTag, /* 'hluw' (HLUW) */
     khojScriptTag, /* 'khoj' (KHOJKI) */
     tirhScriptTag, /* 'tirh' (TIRHUTA) */
     aghbScriptTag, /* 'aghb' (CAUCASIAN_ALBANIAN) */
     mahjScriptTag, /* 'mahj' (MAHAJANI) */
     ahomScriptTag, /* 'ahom' (AHOM) */
-    hatrScriptTag, /* 'hatr' (HATRAN) */
+    hatrScriptTag, /* 'hatr' (HATR) */
     modiScriptTag, /* 'modi' (MODI) */
-    multScriptTag, /* 'mult' (MULTANI) */
+    multScriptTag, /* 'mult' (MULT) */
     paucScriptTag, /* 'pauc' (PAU_CIN_HAU) */
     siddScriptTag  /* 'sidd' (SIDDHAM) */
 };

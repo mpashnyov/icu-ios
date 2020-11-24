@@ -1,6 +1,6 @@
 /**
  *******************************************************************************
- * Copyright (C) 2001-2016, International Business Machines Corporation and
+ * Copyright (C) 2001-2013, International Business Machines Corporation and
  * others. All Rights Reserved.
  *******************************************************************************
  */
@@ -11,7 +11,6 @@
 
 #if !UCONFIG_NO_SERVICE
 
-#include "cmemory.h"
 #include "icusvtst.h"
 #include "servloc.h"
 #include <stdio.h>
@@ -672,7 +671,7 @@ ICUServiceTest::testAPI_Two()
             "en_US_SURFER_GAL",
             "en_US_SURFER_DUDE"
         };
-        int32_t count = UPRV_LENGTHOF(xids);
+        int32_t count = sizeof(xids)/sizeof(UnicodeString);
 
         ICUServiceFactory* f = new TestMultipleKeyStringFactory(xids, count, "Later");
         service.registerFactory(f, status);
@@ -730,7 +729,7 @@ ICUServiceTest::testAPI_Two()
             "en_US_SILICON", 
             "en_US_SILICON_GEEK",
         };
-        int32_t count = UPRV_LENGTHOF(xids);
+        int32_t count = sizeof(xids)/sizeof(UnicodeString);
 
         ICUServiceFactory* f = new TestMultipleKeyStringFactory(xids, count, "Rad dude");
         service.registerFactory(f, status);
@@ -931,7 +930,7 @@ ICUServiceTest::testRBF()
             CalifornioLanguageFactory::surfer, 
             CalifornioLanguageFactory::geek,
         };
-        int32_t count = UPRV_LENGTHOF(idNames);
+        int32_t count = sizeof(idNames)/sizeof(idNames[0]);
 
         for (int i = 0; i < count; ++i) {
             logln(UnicodeString("\n  --- ") + idNames[i] + " ---");

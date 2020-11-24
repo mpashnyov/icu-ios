@@ -1,6 +1,6 @@
 /*
  *
- * (C) Copyright IBM Corp. and others 1998-2016 - All Rights Reserved
+ * (C) Copyright IBM Corp. and others 1998-2013 - All Rights Reserved
  *
  */
 
@@ -14,9 +14,8 @@
 
 #include "LETypes.h"
 #include "LayoutTables.h"
-#include "MorphStateTables.h"
-#include "MorphTables.h"
 #include "StateTables.h"
+#include "MorphTables.h"
 
 U_NAMESPACE_BEGIN
 

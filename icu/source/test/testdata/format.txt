@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2007-2015 International Business Machines
+﻿// Copyright (c) 2007-2014 International Business Machines
 // Corporation and others. All Rights Reserved.
 format:table(nofallback) {
     Info {
@@ -162,7 +162,7 @@ format:table(nofallback) {
                     "GMT",
                     "DATE=RELATIVE_LONG,TIME=MEDIUM",
                     "RELATIVE_ADD:DATE=-1,HOUR_OF_DAY=17,MINUTE=0,SECOND=0", // one day before now at specified time
-                    "17:00:00 Hôm qua"
+                    "17:00:00 hôm qua"
                },
                // el combines formats using hyphen
                {
@@ -492,35 +492,35 @@ format:table(nofallback) {
                     "",
                     "PATTERN=G y",
                     "YEAR=8",
-                    "Heisei 8"
+                    "Reiwa 8"
                },
                {
                     "en_US@calendar=japanese",         
                     "",
                     "PATTERN=G yy",
                     "YEAR=8",
-                    "Heisei 08"
+                    "Reiwa 08"
                },
                {
                     "en_US@calendar=japanese",         
                     "",
                     "PATTERN=G yyy",
                     "YEAR=8",
-                    "Heisei 008"
+                    "Reiwa 008"
                },
                {
                     "en_US@calendar=japanese",         
                     "",
                     "PATTERN=G yyyy",
                     "YEAR=8",
-                    "Heisei 0008"
+                    "Reiwa 0008"
                },
                {
                     "en_US@calendar=japanese",         
                     "",
                     "PATTERN=G yyyyy",
                     "YEAR=8",
-                    "Heisei 00008"
+                    "Reiwa 00008"
                },
 
             }

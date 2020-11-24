@@ -1,6 +1,6 @@
 /**************************************************************************
 *
-*   Copyright (C) 2000-2016, International Business Machines
+*   Copyright (C) 2000-2013, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 ***************************************************************************
@@ -33,7 +33,6 @@
 #include <string.h>
 #include <stdlib.h>  /* malloc */
 
-#include "cmemory.h"
 #include "unicode/utypes.h"   /* Basic ICU data types */
 #include "unicode/ucnv.h"     /* C   Converter API    */
 #include "unicode/ustring.h"  /* some more string fcns*/
@@ -1087,7 +1086,7 @@ void convsample_50() {
     conv = ucnv_open(encoding, &err);
     // do the conversion
     ucnv_toUnicode(conv,
-                   &target, output + UPRV_LENGTHOF(output),
+                   &target, output + sizeof(output)/U_SIZEOF_UCHAR,
                    &source, input + sizeof(input),
                    NULL, TRUE, &err);
     out = output;

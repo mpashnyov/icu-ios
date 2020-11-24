@@ -1,7 +1,7 @@
 /*
 *******************************************************************************
 *
-*   Copyright (C) 2002-2016, International Business Machines
+*   Copyright (C) 2002-2014, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 *******************************************************************************
@@ -138,48 +138,48 @@ StringCaseTest::TestCaseConversion()
         UnicodeString s;
 
         /* lowercase with root locale */
-        s=UnicodeString(FALSE, beforeLower, UPRV_LENGTHOF(beforeLower));
+        s=UnicodeString(FALSE, beforeLower, (int32_t)(sizeof(beforeLower)/U_SIZEOF_UCHAR));
         s.toLower("");
-        if( s.length()!=UPRV_LENGTHOF(lowerRoot) ||
+        if( s.length()!=(sizeof(lowerRoot)/U_SIZEOF_UCHAR) ||
             s!=UnicodeString(FALSE, lowerRoot, s.length())
         ) {
-            errln("error in toLower(root locale)=\"" + s + "\" expected \"" + UnicodeString(FALSE, lowerRoot, UPRV_LENGTHOF(lowerRoot)) + "\"");
+            errln("error in toLower(root locale)=\"" + s + "\" expected \"" + UnicodeString(FALSE, lowerRoot, (int32_t)(sizeof(lowerRoot)/U_SIZEOF_UCHAR)) + "\"");
         }
 
         /* lowercase with turkish locale */
-        s=UnicodeString(FALSE, beforeLower, UPRV_LENGTHOF(beforeLower));
+        s=UnicodeString(FALSE, beforeLower, (int32_t)(sizeof(beforeLower)/U_SIZEOF_UCHAR));
         s.setCharAt(0, beforeLower[0]).toLower(Locale("tr"));
-        if( s.length()!=UPRV_LENGTHOF(lowerTurkish) ||
+        if( s.length()!=(sizeof(lowerTurkish)/U_SIZEOF_UCHAR) ||
             s!=UnicodeString(FALSE, lowerTurkish, s.length())
         ) {
-            errln("error in toLower(turkish locale)=\"" + s + "\" expected \"" + UnicodeString(FALSE, lowerTurkish, UPRV_LENGTHOF(lowerTurkish)) + "\"");
+            errln("error in toLower(turkish locale)=\"" + s + "\" expected \"" + UnicodeString(FALSE, lowerTurkish, (int32_t)(sizeof(lowerTurkish)/U_SIZEOF_UCHAR)) + "\"");
         }
 
         /* uppercase with root locale */
-        s=UnicodeString(FALSE, beforeUpper, UPRV_LENGTHOF(beforeUpper));
+        s=UnicodeString(FALSE, beforeUpper, (int32_t)(sizeof(beforeUpper)/U_SIZEOF_UCHAR));
         s.setCharAt(0, beforeUpper[0]).toUpper(Locale(""));
-        if( s.length()!=UPRV_LENGTHOF(upperRoot) ||
+        if( s.length()!=(sizeof(upperRoot)/U_SIZEOF_UCHAR) ||
             s!=UnicodeString(FALSE, upperRoot, s.length())
         ) {
-            errln("error in toUpper(root locale)=\"" + s + "\" expected \"" + UnicodeString(FALSE, upperRoot, UPRV_LENGTHOF(upperRoot)) + "\"");
+            errln("error in toUpper(root locale)=\"" + s + "\" expected \"" + UnicodeString(FALSE, upperRoot, (int32_t)(sizeof(upperRoot)/U_SIZEOF_UCHAR)) + "\"");
         }
 
         /* uppercase with turkish locale */
-        s=UnicodeString(FALSE, beforeUpper, UPRV_LENGTHOF(beforeUpper));
+        s=UnicodeString(FALSE, beforeUpper, (int32_t)(sizeof(beforeUpper)/U_SIZEOF_UCHAR));
         s.toUpper(Locale("tr"));
-        if( s.length()!=UPRV_LENGTHOF(upperTurkish) ||
+        if( s.length()!=(sizeof(upperTurkish)/U_SIZEOF_UCHAR) ||
             s!=UnicodeString(FALSE, upperTurkish, s.length())
         ) {
-            errln("error in toUpper(turkish locale)=\"" + s + "\" expected \"" + UnicodeString(FALSE, upperTurkish, UPRV_LENGTHOF(upperTurkish)) + "\"");
+            errln("error in toUpper(turkish locale)=\"" + s + "\" expected \"" + UnicodeString(FALSE, upperTurkish, (int32_t)(sizeof(upperTurkish)/U_SIZEOF_UCHAR)) + "\"");
         }
 
         /* uppercase a short string with root locale */
-        s=UnicodeString(FALSE, beforeMiniUpper, UPRV_LENGTHOF(beforeMiniUpper));
+        s=UnicodeString(FALSE, beforeMiniUpper, (int32_t)(sizeof(beforeMiniUpper)/U_SIZEOF_UCHAR));
         s.setCharAt(0, beforeMiniUpper[0]).toUpper("");
-        if( s.length()!=UPRV_LENGTHOF(miniUpper) ||
+        if( s.length()!=(sizeof(miniUpper)/U_SIZEOF_UCHAR) ||
             s!=UnicodeString(FALSE, miniUpper, s.length())
         ) {
-            errln("error in toUpper(root locale)=\"" + s + "\" expected \"" + UnicodeString(FALSE, miniUpper, UPRV_LENGTHOF(miniUpper)) + "\"");
+            errln("error in toUpper(root locale)=\"" + s + "\" expected \"" + UnicodeString(FALSE, miniUpper, (int32_t)(sizeof(miniUpper)/U_SIZEOF_UCHAR)) + "\"");
         }
     }
 

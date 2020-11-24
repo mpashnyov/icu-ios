@@ -1,7 +1,7 @@
 /*
 ******************************************************************************
 *
-*   Copyright (C) 1997-2015, International Business Machines
+*   Copyright (C) 1997-2014, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 ******************************************************************************
@@ -96,6 +96,11 @@ U_COMMON_API UBool U_EXPORT2 umtx_initImplPreInit(UInitOnce &uio) {
 
 // This function is called by the thread that ran an initialization function,
 // just after completing the function.
+//
+//   success: True:  the inialization succeeded. No further calls to the init
+//                   function will be made.
+//            False: the initializtion failed. The next call to umtx_initOnce()
+//                   will retry the initialization.
 
 U_COMMON_API void U_EXPORT2 umtx_initImplPostInit(UInitOnce &uio) {
     umtx_storeRelease(uio.fState, 2);
@@ -344,8 +349,8 @@ umtx_atomic_dec(u_atomic_int32_t *p) {
 
 U_COMMON_API int32_t U_EXPORT2
 umtx_loadAcquire(u_atomic_int32_t &var) {
-    umtx_lock(&gIncDecMutex);
     int32_t val = var;
+    umtx_lock(&gIncDecMutex);
     umtx_unlock(&gIncDecMutex);
     return val;
 }
@@ -353,8 +358,8 @@ umtx_loadAcquire(u_atomic_int32_t &var) {
 U_COMMON_API void U_EXPORT2
 umtx_storeRelease(u_atomic_int32_t &var, int32_t val) {
     umtx_lock(&gIncDecMutex);
-    var = val;
     umtx_unlock(&gIncDecMutex);
+    var = val;
 }
 
 U_NAMESPACE_END

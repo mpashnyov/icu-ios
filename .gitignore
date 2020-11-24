@@ -3,6 +3,7 @@ build-armv7*
 build-armv7s*
 build-arm64*
 build-x86_64*
+build-*
 build-host*
 
 # Compiled Object files

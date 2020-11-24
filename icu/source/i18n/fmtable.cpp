@@ -1,7 +1,7 @@
 /*
 *******************************************************************************
-* Copyright (C) 1997-2016, International Business Machines Corporation and
-* others. All Rights Reserved.
+* Copyright (C) 1997-2013, International Business Machines Corporation and    *
+* others. All Rights Reserved.                                                *
 *******************************************************************************
 *
 * File FMTABLE.CPP
@@ -28,7 +28,6 @@
 #include "cstring.h"
 #include "decNumber.h"
 #include "digitlst.h"
-#include "fmtableimp.h"
 
 // *****************************************************************************
 // class Formattable
@@ -38,6 +37,7 @@ U_NAMESPACE_BEGIN
 
 UOBJECT_DEFINE_RTTI_IMPLEMENTATION(Formattable)
 
+#include "fmtableimp.h"
 
 //-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 
@@ -431,8 +431,7 @@ Formattable::getLong(UErrorCode& status) const
             return ((const Measure*) fValue.fObject)->
                 getNumber().getLong(status);
         }
-        U_FALLTHROUGH;
-    default:
+    default: 
         status = U_INVALID_FORMAT_ERROR;
         return 0;
     }
@@ -483,8 +482,7 @@ Formattable::getInt64(UErrorCode& status) const
             return ((const Measure*) fValue.fObject)->
                 getNumber().getInt64(status);
         }
-        U_FALLTHROUGH;
-    default:
+    default: 
         status = U_INVALID_FORMAT_ERROR;
         return 0;
     }
@@ -514,8 +512,7 @@ Formattable::getDouble(UErrorCode& status) const
             return ((const Measure*) fValue.fObject)->
                 getNumber().getDouble(status);
         }
-        U_FALLTHROUGH;
-    default:
+    default: 
         status = U_INVALID_FORMAT_ERROR;
         return 0;
     }

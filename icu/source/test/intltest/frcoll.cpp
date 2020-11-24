@@ -1,6 +1,6 @@
 /********************************************************************
  * COPYRIGHT: 
- * Copyright (c) 1997-2016, International Business Machines Corporation and
+ * Copyright (c) 1997-2010, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 
@@ -19,7 +19,6 @@
 #include "unicode/tblcoll.h"
 #include "unicode/unistr.h"
 #include "unicode/sortkey.h"
-#include "cmemory.h"
 #include "frcoll.h"
 
 #include "sfwdchit.h"
@@ -167,7 +166,7 @@ void CollationFrenchTest::TestSecondary(/* char* par */)
         errln("Error setting attribute in French collator");
     else
     {
-        const int32_t testAcuteSize = UPRV_LENGTHOF(testAcute);
+        const int32_t testAcuteSize = (int32_t)(sizeof(testAcute) / sizeof(testAcute[0]));
         for (i = 0; i < testAcuteSize; i++)
         {
             for (j = 0; j < testAcuteSize; j++)

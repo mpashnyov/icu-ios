@@ -1,7 +1,8 @@
+
 //
 //  file:  rbbiscan.cpp
 //
-//  Copyright (C) 2002-2016, International Business Machines Corporation and others.
+//  Copyright (C) 2002-2014, International Business Machines Corporation and others.
 //  All Rights Reserved.
 //
 //  This file contains the Rule Based Break Iterator Rule Builder functions for
@@ -87,27 +88,24 @@ U_NAMESPACE_BEGIN
 RBBIRuleScanner::RBBIRuleScanner(RBBIRuleBuilder *rb)
 {
     fRB                 = rb;
-    fScanIndex          = 0;
-    fNextIndex          = 0;
-    fQuoteMode          = FALSE;
-    fLineNum            = 1;
-    fCharNum            = 0;
-    fLastChar           = 0;
-    
-    fStateTable         = NULL;
-    fStack[0]           = 0;
     fStackPtr           = 0;
-    fNodeStack[0]       = NULL;
+    fStack[fStackPtr]   = 0;
     fNodeStackPtr       = 0;
+    fRuleNum            = 0;
+    fNodeStack[0]       = NULL;
+
+    fSymbolTable                            = NULL;
+    fSetTable                               = NULL;
+
+    fScanIndex = 0;
+    fNextIndex = 0;
 
     fReverseRule        = FALSE;
     fLookAheadRule      = FALSE;
-    fNoChainInRule      = FALSE;
 
-    fSymbolTable        = NULL;
-    fSetTable           = NULL;
-    fRuleNum            = 0;
-    fOptionStart        = 0;
+    fLineNum    = 1;
+    fCharNum    = 0;
+    fQuoteMode  = FALSE;
 
     // Do not check status until after all critical fields are sufficiently initialized
     //   that the destructor can run cleanly.
@@ -208,20 +206,11 @@ UBool RBBIRuleScanner::doParseActions(int32_t action)
         break;
 
 
-    case doNoChain:
-        // Scanned a '^' while on the rule start state.
-        fNoChainInRule = TRUE;
-        break;
-
-
     case doExprOrOperator:
         {
             fixOpStack(RBBINode::precOpCat);
             RBBINode  *operandNode = fNodeStack[fNodeStackPtr--];
             RBBINode  *orNode      = pushNewNode(RBBINode::opOr);
-            if (U_FAILURE(*fRB->fStatus)) {
-                break;
-            }
             orNode->fLeftChild     = operandNode;
             operandNode->fParent   = orNode;
         }
@@ -236,9 +225,6 @@ UBool RBBIRuleScanner::doParseActions(int32_t action)
             fixOpStack(RBBINode::precOpCat);
             RBBINode  *operandNode = fNodeStack[fNodeStackPtr--];
             RBBINode  *catNode     = pushNewNode(RBBINode::opCat);
-            if (U_FAILURE(*fRB->fStatus)) {
-                break;
-            }
             catNode->fLeftChild    = operandNode;
             operandNode->fParent   = catNode;
         }
@@ -327,39 +313,20 @@ UBool RBBIRuleScanner::doParseActions(int32_t action)
         if (fRB->fDebugEnv && uprv_strstr(fRB->fDebugEnv, "rtree")) {printNodeStack("end of rule");}
 #endif
         U_ASSERT(fNodeStackPtr == 1);
-        RBBINode *thisRule = fNodeStack[fNodeStackPtr];
 
         // If this rule includes a look-ahead '/', add a endMark node to the
         //   expression tree.
         if (fLookAheadRule) {
+            RBBINode  *thisRule       = fNodeStack[fNodeStackPtr];
             RBBINode  *endNode        = pushNewNode(RBBINode::endMark);
             RBBINode  *catNode        = pushNewNode(RBBINode::opCat);
-            if (U_FAILURE(*fRB->fStatus)) {
-                break;
-            }
             fNodeStackPtr -= 2;
             catNode->fLeftChild       = thisRule;
             catNode->fRightChild      = endNode;
             fNodeStack[fNodeStackPtr] = catNode;
             endNode->fVal             = fRuleNum;
             endNode->fLookAheadEnd    = TRUE;
-            thisRule                  = catNode;
-
-            // TODO: Disable chaining out of look-ahead (hard break) rules.
-            //   The break on rule match is forced, so there is no point in building up
-            //   the state table to chain into another rule for a longer match.
         }
-
-        // Mark this node as being the root of a rule.
-        thisRule->fRuleRoot = TRUE;
-
-        // Flag if chaining into this rule is wanted.
-        //    
-        if (fRB->fChainRules &&         // If rule chaining is enabled globally via !!chain
-                !fNoChainInRule) {      //     and no '^' chain-in inhibit was on this rule
-            thisRule->fChainIn = TRUE;
-        }
-
 
         // All rule expressions are ORed together.
         // The ';' that terminates an expression really just functions as a '|' with
@@ -380,9 +347,6 @@ UBool RBBIRuleScanner::doParseActions(int32_t action)
             RBBINode  *thisRule    = fNodeStack[fNodeStackPtr];
             RBBINode  *prevRules   = *destRules;
             RBBINode  *orNode      = pushNewNode(RBBINode::opOr);
-            if (U_FAILURE(*fRB->fStatus)) {
-                break;
-            }
             orNode->fLeftChild     = prevRules;
             prevRules->fParent     = orNode;
             orNode->fRightChild    = thisRule;
@@ -397,7 +361,6 @@ UBool RBBIRuleScanner::doParseActions(int32_t action)
         }
         fReverseRule   = FALSE;   // in preparation for the next rule.
         fLookAheadRule = FALSE;
-        fNoChainInRule = FALSE;
         fNodeStackPtr  = 0;
         }
         break;
@@ -424,9 +387,6 @@ UBool RBBIRuleScanner::doParseActions(int32_t action)
         {
             RBBINode  *operandNode = fNodeStack[fNodeStackPtr--];
             RBBINode  *plusNode    = pushNewNode(RBBINode::opPlus);
-            if (U_FAILURE(*fRB->fStatus)) {
-                break;
-            }
             plusNode->fLeftChild   = operandNode;
             operandNode->fParent   = plusNode;
         }
@@ -436,9 +396,6 @@ UBool RBBIRuleScanner::doParseActions(int32_t action)
         {
             RBBINode  *operandNode = fNodeStack[fNodeStackPtr--];
             RBBINode  *qNode       = pushNewNode(RBBINode::opQuestion);
-            if (U_FAILURE(*fRB->fStatus)) {
-                break;
-            }
             qNode->fLeftChild      = operandNode;
             operandNode->fParent   = qNode;
         }
@@ -448,9 +405,6 @@ UBool RBBIRuleScanner::doParseActions(int32_t action)
         {
             RBBINode  *operandNode = fNodeStack[fNodeStackPtr--];
             RBBINode  *starNode    = pushNewNode(RBBINode::opStar);
-            if (U_FAILURE(*fRB->fStatus)) {
-                break;
-            }
             starNode->fLeftChild   = operandNode;
             operandNode->fParent   = starNode;
         }
@@ -464,9 +418,6 @@ UBool RBBIRuleScanner::doParseActions(int32_t action)
         // sets that just happen to contain only one character.
         {
             n = pushNewNode(RBBINode::setRef);
-            if (U_FAILURE(*fRB->fStatus)) {
-                break;
-            }
             findSetFor(UnicodeString(fC.fChar), n);
             n->fFirstPos = fScanIndex;
             n->fLastPos  = fNextIndex;
@@ -478,9 +429,6 @@ UBool RBBIRuleScanner::doParseActions(int32_t action)
         // scanned a ".", meaning match any single character.
         {
             n = pushNewNode(RBBINode::setRef);
-            if (U_FAILURE(*fRB->fStatus)) {
-                break;
-            }
             findSetFor(UnicodeString(TRUE, kAny, 3), n);
             n->fFirstPos = fScanIndex;
             n->fLastPos  = fNextIndex;
@@ -491,9 +439,6 @@ UBool RBBIRuleScanner::doParseActions(int32_t action)
     case doSlash:
         // Scanned a '/', which identifies a look-ahead break position in a rule.
         n = pushNewNode(RBBINode::lookAhead);
-        if (U_FAILURE(*fRB->fStatus)) {
-            break;
-        }
         n->fVal      = fRuleNum;
         n->fFirstPos = fScanIndex;
         n->fLastPos  = fNextIndex;
@@ -505,9 +450,6 @@ UBool RBBIRuleScanner::doParseActions(int32_t action)
     case doStartTagValue:
         // Scanned a '{', the opening delimiter for a tag value within a rule.
         n = pushNewNode(RBBINode::tag);
-        if (U_FAILURE(*fRB->fStatus)) {
-            break;
-        }
         n->fVal      = 0;
         n->fFirstPos = fScanIndex;
         n->fLastPos  = fNextIndex;
@@ -618,7 +560,7 @@ UBool RBBIRuleScanner::doParseActions(int32_t action)
         returnVal = FALSE;
         break;
     }
-    return returnVal && U_SUCCESS(*fRB->fStatus);
+    return returnVal;
 }
 
 
@@ -1020,7 +962,7 @@ void RBBIRuleScanner::parse() {
 
         for (;;) {
             #ifdef RBBI_DEBUG
-                if (fRB->fDebugEnv && uprv_strstr(fRB->fDebugEnv, "scan")) { RBBIDebugPrintf("."); fflush(stdout);}
+                if (fRB->fDebugEnv && uprv_strstr(fRB->fDebugEnv, "scan")) { RBBIDebugPrintf(".");}
             #endif
             if (tableEl->fCharClass < 127 && fC.fEscaped == FALSE &&   tableEl->fCharClass == fC.fChar) {
                 // Table row specified an individual character, not a set, and
@@ -1109,9 +1051,6 @@ void RBBIRuleScanner::parse() {
     if (fRB->fReverseTree == NULL) {
         fRB->fReverseTree  = pushNewNode(RBBINode::opStar);
         RBBINode  *operand = pushNewNode(RBBINode::setRef);
-        if (U_FAILURE(*fRB->fStatus)) {
-            return;
-        }
         findSetFor(UnicodeString(TRUE, kAny, 3), operand);
         fRB->fReverseTree->fLeftChild = operand;
         operand->fParent              = fRB->fReverseTree;
@@ -1164,9 +1103,6 @@ void RBBIRuleScanner::printNodeStack(const char *title) {
 //
 //------------------------------------------------------------------------------
 RBBINode  *RBBIRuleScanner::pushNewNode(RBBINode::NodeType  t) {
-    if (U_FAILURE(*fRB->fStatus)) {
-        return NULL;
-    }
     fNodeStackPtr++;
     if (fNodeStackPtr >= kStackSize) {
         error(U_BRK_INTERNAL_ERROR);
@@ -1256,9 +1192,6 @@ void RBBIRuleScanner::scanSet() {
         RBBINode         *n;
 
         n = pushNewNode(RBBINode::setRef);
-        if (U_FAILURE(*fRB->fStatus)) {
-            return;
-        }
         n->fFirstPos = startPos;
         n->fLastPos  = fNextIndex;
         fRB->fRules.extractBetween(n->fFirstPos, n->fLastPos, n->fText);

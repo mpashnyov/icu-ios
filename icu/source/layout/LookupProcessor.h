@@ -1,7 +1,7 @@
 /*
  * %W% %E%
  *
- * (C) Copyright IBM Corp. 1998-2016 - All Rights Reserved
+ * (C) Copyright IBM Corp. 1998-2013 - All Rights Reserved
  *
  */
 
@@ -17,7 +17,8 @@
 #include "LEFontInstance.h"
 #include "OpenTypeTables.h"
 #include "LETableReference.h"
-#include "Lookups.h"
+//#include "Lookups.h"
+//#include "Features.h"
 
 U_NAMESPACE_BEGIN
 
@@ -29,6 +30,7 @@ struct FeatureTable;
 struct FeatureListTable;
 struct GlyphDefinitionTableHeader;
 struct LookupSubtable;
+struct LookupTable;
 
 class LookupProcessor : public UMemory {
 public:

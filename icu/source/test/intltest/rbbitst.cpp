@@ -1,6 +1,6 @@
 /********************************************************************
  * COPYRIGHT:
- * Copyright (c) 1999-2016, International Business Machines Corporation and
+ * Copyright (c) 1999-2014, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 /************************************************************************
@@ -9,40 +9,35 @@
 *   01/12/2000  Madhu        Updated for changed API and added new tests
 ************************************************************************/
 
+#include "utypeinfo.h"  // for 'typeid' to work
+
 #include "unicode/utypes.h"
+
 #if !UCONFIG_NO_BREAK_ITERATION
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
+#include "unicode/utypes.h"
 #include "unicode/brkiter.h"
-#include "unicode/localpointer.h"
-#include "unicode/numfmt.h"
 #include "unicode/rbbi.h"
-#if !UCONFIG_NO_REGULAR_EXPRESSIONS
-#include "unicode/regex.h"
-#endif
-#include "unicode/schriter.h"
 #include "unicode/uchar.h"
 #include "unicode/utf16.h"
 #include "unicode/ucnv.h"
+#include "unicode/schriter.h"
 #include "unicode/uniset.h"
-#include "unicode/uscript.h"
+#if !UCONFIG_NO_REGULAR_EXPRESSIONS
+#include "unicode/regex.h"
+#endif
 #include "unicode/ustring.h"
 #include "unicode/utext.h"
-
-#include "charstr.h"
-#include "cmemory.h"
 #include "intltest.h"
 #include "rbbitst.h"
-#include "utypeinfo.h"  // for 'typeid' to work
+#include <string.h>
+#include "charstr.h"
 #include "uvector.h"
 #include "uvectr32.h"
-
-#if !UCONFIG_NO_FILTERED_BREAK_ITERATION
-#include "unicode/filteredbrk.h"
-#endif // !UCONFIG_NO_FILTERED_BREAK_ITERATION
+#include <stdio.h>
+#include <stdlib.h>
+#include "unicode/numfmt.h"
+#include "unicode/uscript.h"
 
 #define TEST_ASSERT(x) {if (!(x)) { \
     errln("Failure in file %s, line %d", __FILE__, __LINE__);}}
@@ -56,7 +51,7 @@
 //---------------------------------------------
 
 
-//  Note:  Before adding new tests to this file, check whether the desired test data can
+//  Note:  Before adding new tests to this file, check whether the desired test data can 
 //         simply be added to the file testdata/rbbitest.txt.  In most cases it can,
 //         it's much less work than writing a new test, diagnostic output in the event of failures
 //         is good, and the test data file will is shared with ICU4J, so eventually the test
@@ -79,7 +74,7 @@ void RBBITest::runIndexedTest( int32_t index, UBool exec, const char* &name, cha
             break;
         case 2: name = "TestStatusReturn";
             if(exec) TestStatusReturn();                       break;
-
+ 
 #if !UCONFIG_NO_FILE_IO
         case 3: name = "TestUnicodeFiles";
             if(exec) TestUnicodeFiles();                       break;
@@ -117,7 +112,7 @@ void RBBITest::runIndexedTest( int32_t index, UBool exec, const char* &name, cha
 #endif
 
 #if !UCONFIG_NO_REGULAR_EXPRESSIONS && !UCONFIG_NO_FILE_IO
-        case 16:
+        case 16:  
             name = "TestMonkey"; if(exec)  TestMonkey(params); break;
 #else
         case 16:
@@ -323,7 +318,7 @@ void RBBITest::TestStatusReturn() {
                                   "$Numbers = [:N:];\n"
                                   "$Letters+{1};\n"
                                   "$Numbers+{2};\n"
-                                  "Help\\ /me\\!{4};\n"
+                                  "Help\\ {4}/me\\!;\n"
                                   "[^$Letters $Numbers];\n"
                                   "!.*;\n", -1, US_INV);
      UnicodeString testString1  = "abc123..abc Help me Help me!";
@@ -334,27 +329,28 @@ void RBBITest::TestStatusReturn() {
      UErrorCode status=U_ZERO_ERROR;
      UParseError    parseError;
 
-     LocalPointer <BreakIterator> bi(new RuleBasedBreakIterator(rulesString1, parseError, status));
+     BreakIterator *bi = new RuleBasedBreakIterator(rulesString1, parseError, status);
      if(U_FAILURE(status)) {
-         dataerrln("%s:%d error in break iterator construction - %s", __FILE__, __LINE__,  u_errorName(status));
-         return;
-     }
-     int32_t  pos;
-     int32_t  i = 0;
-     bi->setText(testString1);
-     for (pos=bi->first(); pos!= BreakIterator::DONE; pos=bi->next()) {
-         if (pos != bounds1[i]) {
-             errln("%s:%d  expected break at %d, got %d\n", __FILE__, __LINE__, bounds1[i], pos);
-             break;
-         }
+         dataerrln("FAIL : in construction - %s", u_errorName(status));
+     } else {
+         int32_t  pos;
+         int32_t  i = 0;
+         bi->setText(testString1);
+         for (pos=bi->first(); pos!= BreakIterator::DONE; pos=bi->next()) {
+             if (pos != bounds1[i]) {
+                 errln("FAIL:  expected break at %d, got %d\n", bounds1[i], pos);
+                 break;
+             }
 
-         int tag = bi->getRuleStatus();
-         if (tag != brkStatus[i]) {
-             errln("%s:%d  break at %d, expected tag %d, got tag %d\n", __FILE__, __LINE__, pos, brkStatus[i], tag);
-             break;
+             int tag = bi->getRuleStatus();
+             if (tag != brkStatus[i]) {
+                 errln("FAIL:  break at %d, expected tag %d, got tag %d\n", pos, brkStatus[i], tag);
+                 break;
+             }
+             i++;
          }
-         i++;
      }
+     delete bi;
 }
 
 
@@ -816,7 +812,7 @@ void RBBITest::TestBug5775() {
     if (bi == NULL) {
         return;
     }
-
+    
     UnicodeString s("One.\\u00ad Two.", -1, US_INV);
     //               01234      56789
     s = s.unescape();
@@ -868,7 +864,7 @@ struct TestParams {
         utext_close(textToBreak);
         delete textMap;
     }
-
+    
     int32_t getSrcLine(int32_t bp);
     int32_t getExpectedBreak(int32_t bp);
     int32_t getSrcCol(int32_t bp);
@@ -900,7 +896,7 @@ static void CharStringAppend(CharString &dest, const UnicodeString &src, UErrorC
                        0xfffd, NULL, &status);
     dest.append(buffer, utf8Length, status);
 }
-
+  
 
 void TestParams::setUTF16(UErrorCode &status) {
     textToBreak = utext_openUnicodeString(textToBreak, &dataToBreak, &status);
@@ -1178,7 +1174,7 @@ void RBBITest::TestExtended() {
     UnicodeString       rules;
     TestParams          tp(status);
 
-    RegexMatcher      localeMatcher(UNICODE_STRING_SIMPLE("<locale *([\\p{L}\\p{Nd}_@&=-]*) *>"), 0, status);
+    RegexMatcher      localeMatcher(UNICODE_STRING_SIMPLE("<locale *([\\p{L}\\p{Nd}_]*) *>"), 0, status);
     if (U_FAILURE(status)) {
         dataerrln("Failure in file %s, line %d, status = \"%s\"", __FILE__, __LINE__, u_errorName(status));
     }
@@ -1203,7 +1199,7 @@ void RBBITest::TestExtended() {
     }
 
 
-    bool skipTest = false; // Skip this test?
+
 
     //
     //  Put the test data into a UnicodeString
@@ -1271,28 +1267,25 @@ void RBBITest::TestExtended() {
             if (testString.compare(charIdx-1, 6, "<word>") == 0) {
                 delete tp.bi;
                 tp.bi = BreakIterator::createWordInstance(locale,  status);
-                skipTest = false;
                 charIdx += 5;
                 break;
             }
             if (testString.compare(charIdx-1, 6, "<char>") == 0) {
                 delete tp.bi;
                 tp.bi = BreakIterator::createCharacterInstance(locale,  status);
-                skipTest = false;
                 charIdx += 5;
                 break;
             }
             if (testString.compare(charIdx-1, 6, "<line>") == 0) {
                 delete tp.bi;
                 tp.bi = BreakIterator::createLineInstance(locale,  status);
-                skipTest = false;
                 charIdx += 5;
                 break;
             }
             if (testString.compare(charIdx-1, 6, "<sent>") == 0) {
                 delete tp.bi;
+                tp.bi = NULL;
                 tp.bi = BreakIterator::createSentenceInstance(locale,  status);
-                skipTest = false;
                 charIdx += 5;
                 break;
             }
@@ -1353,19 +1346,17 @@ void RBBITest::TestExtended() {
                 parseState = PARSE_TAG;
                 charIdx += 6;
 
-                if (!skipTest) {
-                    // RUN THE TEST!
-                    status = U_ZERO_ERROR;
-                    tp.setUTF16(status);
-                    executeTest(&tp, status);
-                    TEST_ASSERT_SUCCESS(status);
+                // RUN THE TEST!
+                status = U_ZERO_ERROR;
+                tp.setUTF16(status);
+                executeTest(&tp, status);
+                TEST_ASSERT_SUCCESS(status);
 
-                    // Run again, this time with UTF-8 text wrapped in a UText.
-                    status = U_ZERO_ERROR;
-                    tp.setUTF8(status);
-                    TEST_ASSERT_SUCCESS(status);
-                    executeTest(&tp, status);
-                }
+                // Run again, this time with UTF-8 text wrapped in a UText.
+                status = U_ZERO_ERROR;
+                tp.setUTF8(status);
+                TEST_ASSERT_SUCCESS(status);
+                executeTest(&tp, status);
                 break;
             }
 
@@ -1577,7 +1568,7 @@ void RBBITest::TestDictRules() {
 //-------------------------------------------------------------------------------
 //
 //    ReadAndConvertFile   Read a text data file, convert it to UChars, and
-//    return the data in one big UChar * buffer, which the caller must delete.
+//    return the datain one big UChar * buffer, which the caller must delete.
 //
 //    parameters:
 //          fileName:   the name of the file, with no directory part.  The test data directory
@@ -1733,32 +1724,6 @@ void RBBITest::TestUnicodeFiles() {
 }
 
 
-// Check for test cases from the Unicode test data files that are known to fail
-// and should be skipped because ICU is not yet able to fully implement the spec.
-// See ticket #7270.
-
-UBool RBBITest::testCaseIsKnownIssue(const UnicodeString &testCase, const char *fileName) {
-    static const UChar badTestCases[][4] = {                     // Line Numbers from Unicode 7.0.0 file.
-        {(UChar)0x200B, (UChar)0x0020, (UChar)0x007D, (UChar)0x0000},   // Line 5198
-        {(UChar)0x200B, (UChar)0x0020, (UChar)0x0029, (UChar)0x0000},   // Line 5202
-        {(UChar)0x200B, (UChar)0x0020, (UChar)0x0021, (UChar)0x0000},   // Line 5214
-        {(UChar)0x200B, (UChar)0x0020, (UChar)0x002c, (UChar)0x0000},   // Line 5246
-        {(UChar)0x200B, (UChar)0x0020, (UChar)0x002f, (UChar)0x0000},   // Line 5298
-        {(UChar)0x200B, (UChar)0x0020, (UChar)0x2060, (UChar)0x0000}    // Line 5302
-    };
-    if (strcmp(fileName, "LineBreakTest.txt") != 0) {
-        return FALSE;
-    }
-
-    for (int i=0; i<UPRV_LENGTHOF(badTestCases); i++) {
-        if (testCase == UnicodeString(badTestCases[i])) {
-            return logKnownIssue("7270");
-        }
-    }
-    return FALSE;
-}
-
-
 //--------------------------------------------------------------------------------------------
 //
 //   Run tests from one of the boundary test data files distributed by the Unicode Consortium
@@ -1766,6 +1731,9 @@ UBool RBBITest::testCaseIsKnownIssue(const UnicodeString &testCase, const char *
 //-------------------------------------------------------------------------------------------
 void RBBITest::runUnicodeTestData(const char *fileName, RuleBasedBreakIterator *bi) {
 #if !UCONFIG_NO_REGULAR_EXPRESSIONS
+    // TODO(andy): Match line break behavior to Unicode 6.0 and remove this time bomb. Ticket #7270
+    UBool isTicket7270Fixed = !logKnownIssue("7270");
+    UBool isLineBreak = 0 == strcmp(fileName, "LineBreakTest.txt");
     UErrorCode  status = U_ZERO_ERROR;
 
     //
@@ -1779,7 +1747,7 @@ void RBBITest::runUnicodeTestData(const char *fileName, RuleBasedBreakIterator *
     }
     strcpy(testFileName, testDataDirectory);
     strcat(testFileName, fileName);
-
+    
     logln("Opening data file %s\n", fileName);
 
     int    len;
@@ -1857,8 +1825,20 @@ void RBBITest::runUnicodeTestData(const char *fileName, RuleBasedBreakIterator *
         else if (tokenMatcher.start(4, status) >= 0) {
             // Scanned to end of a line, possibly skipping over a comment in the process.
             //   If the line from the file contained test data, run the test now.
-            if (testString.length() > 0 && !testCaseIsKnownIssue(testString, fileName)) {
+            //
+            if (testString.length() > 0) {
+// TODO(andy): Remove this time bomb code. Note: Failing line numbers may change when updating to new Unicode data.
+//             Rule 8 
+//                ZW SP* <break>
+//             is not yet implemented.
+if (!(isLineBreak && !isTicket7270Fixed && (5198 == lineNumber || 
+                                            5202 == lineNumber ||
+                                            5214 == lineNumber ||
+                                            5246 == lineNumber ||
+                                            5298 == lineNumber ||
+                                            5302 == lineNumber ))) {
                 checkUnicodeTestCase(fileName, lineNumber, testString, &breakPositions, bi);
+}
             }
 
             // Clear out this test case.
@@ -2029,10 +2009,6 @@ private:
     UnicodeSet  *fLVTSet;
     UnicodeSet  *fHangulSet;
     UnicodeSet  *fAnySet;
-    UnicodeSet  *fEmojiModifierSet;
-    UnicodeSet  *fEmojiBaseSet;
-    UnicodeSet  *fZWJSet;
-    UnicodeSet  *fGAZSet;
 
     const UnicodeString *fText;
 };
@@ -2044,8 +2020,8 @@ RBBICharMonkey::RBBICharMonkey() {
     fText = NULL;
 
     fCRLFSet    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\r\\n]"), status);
-    fControlSet = new UnicodeSet(UNICODE_STRING_SIMPLE("[[\\p{Grapheme_Cluster_Break = Control}]-[:Block=Tags:]]"), status);
-    fExtendSet  = new UnicodeSet(UNICODE_STRING_SIMPLE("[[\\p{Grapheme_Cluster_Break = Extend}][:Block=Tags:]]"), status);
+    fControlSet = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Grapheme_Cluster_Break = Control}]"), status);
+    fExtendSet  = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Grapheme_Cluster_Break = Extend}]"), status);
     fRegionalIndicatorSet = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Grapheme_Cluster_Break = Regional_Indicator}]"), status);
     fPrependSet = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Grapheme_Cluster_Break = Prepend}]"), status);
     fSpacingSet = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Grapheme_Cluster_Break = SpacingMark}]"), status);
@@ -2062,18 +2038,6 @@ RBBICharMonkey::RBBICharMonkey() {
     fHangulSet->addAll(*fLVTSet);
     fAnySet     = new UnicodeSet(0, 0x10ffff);
 
-
-
-    fEmojiBaseSet = new UnicodeSet(UnicodeString(
-                "[\\u261D\\u26F9\\u270A-\\u270D\\U0001F385\\U0001F3C3-\\U0001F3C4\\U0001F3CA-\\U0001F3CB\\U0001F442-\\U0001F443"
-                "\\U0001F446-\\U0001F450\\U0001F466-\\U0001F469\\U0001F46E\\U0001F470-\\U0001F478\\U0001F47C\\U0001F481-\\U0001F483"
-                "\\U0001F485-\\U0001F487\\U0001F4AA\\U0001F575\\U0001F590\\U0001F595-\\U0001F596\\U0001F645-\\U0001F647"
-                "\\U0001F64B-\\U0001F64F\\U0001F6A3\\U0001F6B4-\\U0001F6B6\\U0001F6C0\\U0001F918]"), status);
-
-    fEmojiModifierSet = new UnicodeSet(0x0001F3FB, 0x0001F3FF);
-    fZWJSet           = new UnicodeSet(0x200D, 0x200D);
-    fGAZSet           = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\U0001F466-\\U0001F469\\U0001F48B\\U0001F5E8\\u2764]"), status);
-
     fSets       = new UVector(status);
     fSets->addElement(fCRLFSet,    status);
     fSets->addElement(fControlSet, status);
@@ -2085,10 +2049,6 @@ RBBICharMonkey::RBBICharMonkey() {
     fSets->addElement(fSpacingSet, status);
     fSets->addElement(fHangulSet,  status);
     fSets->addElement(fAnySet,     status);
-    fSets->addElement(fEmojiBaseSet, status);
-    fSets->addElement(fEmojiModifierSet, status);
-    fSets->addElement(fZWJSet,     status);
-    fSets->addElement(fGAZSet,     status);
     if (U_FAILURE(status)) {
         deferredStatus = status;
     }
@@ -2109,7 +2069,7 @@ int32_t RBBICharMonkey::next(int32_t prevPos) {
     int     breakPos = -1;
 
     UChar32 c0, c1, c2, c3;   // The code points at p0, p1, p2 & p3.
-
+    
     if (U_FAILURE(deferredStatus)) {
         return -1;
     }
@@ -2190,20 +2150,12 @@ int32_t RBBICharMonkey::next(int32_t prevPos) {
         }
 
         // Rule (GB8a)    Regional_Indicator x Regional_Indicator
-        //                Note: The first if condition is a little tricky. We only need to force
-        //                      a break if there are three or more contiguous RIs. If there are
-        //                      only two, a break following will occur via other rules, and will include
-        //                      any trailing extend characters, which is needed behavior.
-        if (fRegionalIndicatorSet->contains(c0) && fRegionalIndicatorSet->contains(c1) 
-                && fRegionalIndicatorSet->contains(c2)) {
-            break;
-        }
         if (fRegionalIndicatorSet->contains(c1) && fRegionalIndicatorSet->contains(c2)) {
             continue;
         }
 
-        // Rule (GB9)    x Extend
-        if (fExtendSet->contains(c2) || fZWJSet->contains(c2))  {
+        // Rule (GB9)    Numeric x ALetter
+        if (fExtendSet->contains(c2))  {
             continue;
         }
 
@@ -2214,16 +2166,6 @@ int32_t RBBICharMonkey::next(int32_t prevPos) {
 
         // Rule (GB9b)   Prepend x
         if (fPrependSet->contains(c1)) {
-            continue;
-        }
-
-        // Rule (GB9c)   Emoji_Base x Emoji_Modifier
-        if ((fEmojiBaseSet->contains(c1) || fGAZSet->contains(c1)) && fEmojiModifierSet->contains(c2)) {
-            continue;
-        }
-
-        // Rule (GB9d)   ZWJ x Glue_After_Zwj
-        if (fZWJSet->contains(c1) && fGAZSet->contains(c2)) {
             continue;
         }
 
@@ -2257,10 +2199,6 @@ RBBICharMonkey::~RBBICharMonkey() {
     delete fLVTSet;
     delete fHangulSet;
     delete fAnySet;
-    delete fEmojiBaseSet;
-    delete fEmojiModifierSet;
-    delete fZWJSet;
-    delete fGAZSet;
 }
 
 //------------------------------------------------------------------------------------------
@@ -2286,7 +2224,7 @@ private:
     UnicodeSet  *fKatakanaSet;
     UnicodeSet  *fHebrew_LetterSet;
     UnicodeSet  *fALetterSet;
-    // TODO(jungshik): Do we still need this change?
+    // TODO(jungshik): Do we still need this change? 
     // UnicodeSet  *fALetterSet; // matches ALetterPlus in word.txt
     UnicodeSet  *fSingle_QuoteSet;
     UnicodeSet  *fDouble_QuoteSet;
@@ -2299,10 +2237,6 @@ private:
     UnicodeSet  *fExtendSet;
     UnicodeSet  *fExtendNumLetSet;
     UnicodeSet  *fDictionaryCjkSet;
-    UnicodeSet  *fEBaseSet;
-    UnicodeSet  *fEModifierSet;
-    UnicodeSet  *fZWSSet;
-    UnicodeSet  *fGAZSet;
 
     const UnicodeString  *fText;
 };
@@ -2320,7 +2254,7 @@ RBBIWordMonkey::RBBIWordMonkey()
     fDictionaryCjkSet= new UnicodeSet("[[\\uac00-\\ud7a3][:Han:][:Hiragana:][:Katakana:]]", status);
     // Exclude Hangul syllables from ALetterSet during testing.
     // Leave CJK dictionary characters out from the monkey tests!
-#if 0
+#if 0 
     fALetterSet      = new UnicodeSet("[\\p{Word_Break = ALetter}"
                                       "[\\p{Line_Break = Complex_Context}"
                                       "-\\p{Grapheme_Cluster_Break = Extend}"
@@ -2345,18 +2279,6 @@ RBBIWordMonkey::RBBIWordMonkey()
     fExtendNumLetSet  = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Word_Break = ExtendNumLet}]"), status);
     fExtendSet        = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Word_Break = Extend}]"),       status);
 
-    fEBaseSet         = new UnicodeSet(UnicodeString(
-                "[\\u261D\\u26F9\\u270A-\\u270D\\U0001F385\\U0001F3C3-\\U0001F3C4\\U0001F3CA-\\U0001F3CB\\U0001F442-\\U0001F443"
-                "\\U0001F446-\\U0001F450\\U0001F466-\\U0001F469\\U0001F46E\\U0001F470-\\U0001F478\\U0001F47C\\U0001F481-\\U0001F483"
-                "\\U0001F485-\\U0001F487\\U0001F4AA\\U0001F575\\U0001F590\\U0001F595-\\U0001F596\\U0001F645-\\U0001F647"
-                "\\U0001F64B-\\U0001F64F\\U0001F6A3\\U0001F6B4-\\U0001F6B6\\U0001F6C0\\U0001F918]"), status);
-
-    fEModifierSet    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\U0001F3FB-\\U0001F3FF]"), status);
-    fZWSSet          = new UnicodeSet((UChar32)0x200D, (UChar32)0x200D);;
-    fGAZSet          = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\U0001F466-\\U0001F469\\U0001F48B\\U0001F5E8\\u2764]"), status);
-    fExtendSet->removeAll(*fZWSSet);
-
-
     fOtherSet        = new UnicodeSet();
     if(U_FAILURE(status)) {
       deferredStatus = status;
@@ -2379,11 +2301,6 @@ RBBIWordMonkey::RBBIWordMonkey()
     fOtherSet->removeAll(*fFormatSet);
     fOtherSet->removeAll(*fExtendSet);
     fOtherSet->removeAll(*fRegionalIndicatorSet);
-    fOtherSet->removeAll(*fEBaseSet);
-    fOtherSet->removeAll(*fEModifierSet);
-    fOtherSet->removeAll(*fZWSSet);
-    fOtherSet->removeAll(*fGAZSet);
-    
     // Inhibit dictionary characters from being tested at all.
     fOtherSet->removeAll(*fDictionaryCjkSet);
     fOtherSet->removeAll(UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{LineBreak = Complex_Context}]"), status));
@@ -2406,11 +2323,6 @@ RBBIWordMonkey::RBBIWordMonkey()
     fSets->addElement(fOtherSet,             status);
     fSets->addElement(fExtendNumLetSet,      status);
 
-    fSets->addElement(fEBaseSet,             status);
-    fSets->addElement(fEModifierSet,         status);
-    fSets->addElement(fZWSSet,               status);
-    fSets->addElement(fGAZSet,               status);
-
     if (U_FAILURE(status)) {
         deferredStatus = status;
     }
@@ -2429,7 +2341,7 @@ int32_t RBBIWordMonkey::next(int32_t prevPos) {
     int     breakPos = -1;
 
     UChar32 c0, c1, c2, c3;   // The code points at p0, p1, p2 & p3.
-
+    
     if (U_FAILURE(deferredStatus)) {
         return -1;
     }
@@ -2459,7 +2371,7 @@ int32_t RBBIWordMonkey::next(int32_t prevPos) {
                break;
             };
         }
-        while (fFormatSet->contains(c3) || fExtendSet->contains(c3) || fZWSSet->contains(c3));
+        while (fFormatSet->contains(c3) || fExtendSet->contains(c3));
 
 
         if (p1 == p2) {
@@ -2478,7 +2390,7 @@ int32_t RBBIWordMonkey::next(int32_t prevPos) {
         if (c1==0x0D && c2==0x0A) {
             continue;
         }
-
+        
         // Rule (3a)  Break before and after newlines (including CR and LF)
         //
         if (fCRSet->contains(c1) || fLFSet->contains(c1) || fNewlineSet->contains(c1)) {
@@ -2487,15 +2399,6 @@ int32_t RBBIWordMonkey::next(int32_t prevPos) {
         if (fCRSet->contains(c2) || fLFSet->contains(c2) || fNewlineSet->contains(c2)) {
             break;
         };
-
-        // Rule (3c)    ZWJ x GAZ (Glue after ZWJ).
-        //              Not ignoring extend chars, so peek into input text to
-        //              get the potential ZWJ, the character immediately preceding c2.
-        //              Sloppy UChar32 indexing: p2-1 may reference trail half
-        //              but char32At will get the full code point.
-        if (fZWSSet->contains(fText->char32At(p2-1)) && fGAZSet->contains(c2)) {
-            continue;
-        }
 
         // Rule (5).   (ALetter | Hebrew_Letter) x (ALetter | Hebrew_Letter)
         if ((fALetterSet->contains(c1) || fHebrew_LetterSet->contains(c1)) &&
@@ -2586,15 +2489,7 @@ int32_t RBBIWordMonkey::next(int32_t prevPos) {
         }
 
         // Rule 13c
-        if (fRegionalIndicatorSet->contains(c0) && fRegionalIndicatorSet->contains(c1)) {
-            break;
-        }
         if (fRegionalIndicatorSet->contains(c1) && fRegionalIndicatorSet->contains(c2)) {
-            continue;
-        }
-
-        // Rule 13d
-        if ((fEBaseSet->contains(c1)  || fGAZSet->contains(c1)) && fEModifierSet->contains(c2)) {
             continue;
         }
 
@@ -2632,10 +2527,6 @@ RBBIWordMonkey::~RBBIWordMonkey() {
     delete fRegionalIndicatorSet;
     delete fDictionaryCjkSet;
     delete fOtherSet;
-    delete fEBaseSet;
-    delete fEModifierSet;
-    delete fZWSSet;
-    delete fGAZSet;
 }
 
 
@@ -2852,9 +2743,8 @@ int32_t RBBISentMonkey::next(int32_t prevPos) {
             continue;
         }
 
-        // Rule (7).  (Upper | Lower) ATerm  x  Uppper
-        if ((fUpperSet->contains(c0) || fLowerSet->contains(c0)) &&
-                fATermSet->contains(c1) && fUpperSet->contains(c2)) {
+        // Rule (7).  Upper ATerm  x  Uppper
+        if (fUpperSet->contains(c0) && fATermSet->contains(c1) && fUpperSet->contains(c2)) {
             continue;
         }
 
@@ -3021,29 +2911,17 @@ private:
     UnicodeSet  *fHL;
     UnicodeSet  *fID;
     UnicodeSet  *fRI;
+    UnicodeSet  *fSA;
     UnicodeSet  *fXX;
-    UnicodeSet  *fEB;
-    UnicodeSet  *fEM;
-    UnicodeSet  *fZJ;
 
     BreakIterator        *fCharBI;
     const UnicodeString  *fText;
     RegexMatcher         *fNumberMatcher;
 };
 
-RBBILineMonkey::RBBILineMonkey() :
-    RBBIMonkeyKind(),
-    fSets(NULL),
 
-    fCharBI(NULL),
-    fText(NULL),
-    fNumberMatcher(NULL)
-
+RBBILineMonkey::RBBILineMonkey()
 {
-    if (U_FAILURE(deferredStatus)) {
-        return;
-    }
-
     UErrorCode  status = U_ZERO_ERROR;
 
     fSets  = new UVector(status);
@@ -3085,34 +2963,23 @@ RBBILineMonkey::RBBILineMonkey() :
     fHL    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Line_break=HL}]"), status);
     fID    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Line_break=ID}]"), status);
     fRI    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Line_break=RI}]"), status);
+    fSA    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Line_break=SA}]"), status);
     fSG    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\ud800-\\udfff]"), status);
     fXX    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Line_break=XX}]"), status);
-    fEB    = new UnicodeSet(UnicodeString(
-                "[\\u261D\\u26F9\\u270A-\\u270D\\U0001F385\\U0001F3C3-\\U0001F3C4\\U0001F3CA-\\U0001F3CB\\U0001F442-\\U0001F443"
-                "\\U0001F446-\\U0001F450\\U0001F466-\\U0001F469\\U0001F46E\\U0001F470-\\U0001F478\\U0001F47C\\U0001F481-\\U0001F483"
-                "\\U0001F485-\\U0001F487\\U0001F4AA\\U0001F575\\U0001F590\\U0001F595-\\U0001F596\\U0001F645-\\U0001F647"
-                "\\U0001F64B-\\U0001F64F\\U0001F6A3\\U0001F6B4-\\U0001F6B6\\U0001F6C0\\U0001F918]"), status);
-    fEM    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\U0001F3FB-\\U0001F3FF]"), status);
-    fZJ    = new UnicodeSet((UChar32)0x200D, (UChar32)0x200D);
 
     if (U_FAILURE(status)) {
         deferredStatus = status;
+        fCharBI = NULL;
+        fNumberMatcher = NULL;
         return;
     }
 
     fAL->addAll(*fXX);     // Default behavior for XX is identical to AL
     fAL->addAll(*fAI);     // Default behavior for AI is identical to AL
+    fAL->addAll(*fSA);     // Default behavior for SA is XX, which defaults to AL
     fAL->addAll(*fSG);     // Default behavior for SG is identical to AL.
 
     fNS->addAll(*fCJ);     // Default behavior for CJ is identical to NS.
-
-    fID->addAll(*fEB);     // Emoji Base and Emoji Modifier behave as ID.
-    fID->addAll(*fEM);
-    fAL->removeAll(*fEM);
-
-
-    fAL->remove((UChar32)0x2764);   // Emoji Proposal: move u2764 from Al to Id
-    fID->add((UChar32)0x2764);
 
     fSets->addElement(fBK, status);
     fSets->addElement(fCR, status);
@@ -3151,12 +3018,10 @@ RBBILineMonkey::RBBILineMonkey() :
     fSets->addElement(fID, status);
     fSets->addElement(fWJ, status);
     fSets->addElement(fRI, status);
+    fSets->addElement(fSA, status);
     fSets->addElement(fSG, status);
-    fSets->addElement(fEB, status);
-    fSets->addElement(fEM, status);
-    fSets->addElement(fZJ, status);
 
-    const char *rules =
+    const char *rules = 
             "((\\p{Line_Break=PR}|\\p{Line_Break=PO})\\p{Line_Break=CM}*)?"
             "((\\p{Line_Break=OP}|\\p{Line_Break=HY})\\p{Line_Break=CM}*)?"
             "\\p{Line_Break=NU}\\p{Line_Break=CM}*"
@@ -3341,18 +3206,6 @@ int32_t RBBILineMonkey::next(int32_t startPos) {
             break;
         }
 
-        // LB 8a ZJ x ID
-        //       The monkey test's way of ignoring combining characters doesn't work
-        //       for this rule. ZJ is also a CM. Need to get the actual character
-        //       preceding "thisChar", not ignoring combining marks, possibly ZJ.
-        {
-            int32_t prevIdx = fText->moveIndex32(pos, -1);
-            UChar32 prevC = fText->char32At(prevIdx);
-            if (fZJ->contains(prevC) && fID->contains(thisChar)) {
-                continue;
-            }
-        }
-
         // LB 9, 10  Already done, at top of loop.
         //
 
@@ -3370,7 +3223,7 @@ int32_t RBBILineMonkey::next(int32_t startPos) {
         if (fGL->contains(prevChar)) {
             continue;
         }
-
+        
         // LB 12a
         //    [^SP BA HY] x GL
         if (!(fSP->contains(prevChar) ||
@@ -3493,7 +3346,7 @@ int32_t RBBILineMonkey::next(int32_t startPos) {
 
         // LB 21a
         //   HL (HY | BA) x
-        if (fHL->contains(prevCharX2) &&
+        if (fHL->contains(prevCharX2) && 
                 (fHY->contains(prevChar) || fBA->contains(prevChar))) {
             continue;
         }
@@ -3506,7 +3359,6 @@ int32_t RBBILineMonkey::next(int32_t startPos) {
 
         // LB 22
         if ((fAL->contains(prevChar) && fIN->contains(thisChar)) ||
-            (fEX->contains(prevChar) && fIN->contains(thisChar)) ||
             (fHL->contains(prevChar) && fIN->contains(thisChar)) ||
             (fID->contains(prevChar) && fIN->contains(thisChar)) ||
             (fIN->contains(prevChar) && fIN->contains(thisChar)) ||
@@ -3620,17 +3472,9 @@ int32_t RBBILineMonkey::next(int32_t startPos) {
             continue;
         }
 
-        // LB30a    RI RI <break> RI
-        //             RI    x    RI
-        if (fRI->contains(prevCharX2) && fRI->contains(prevChar) && fRI->contains(thisChar)) {
-            break;
-        }
+        // LB30a  Do not break between regional indicators.
+        //        RI x RI
         if (fRI->contains(prevChar) && fRI->contains(thisChar)) {
-            continue;
-        }
-
-        // LB30b    Emoji Base x Emoji Modifier
-        if (fEB->contains(prevChar) && fEM->contains(thisChar)) {
             continue;
         }
 
@@ -3688,11 +3532,9 @@ RBBILineMonkey::~RBBILineMonkey() {
     delete fHL;
     delete fID;
     delete fRI;
+    delete fSA;
     delete fSG;
     delete fXX;
-    delete fEB;
-    delete fEM;
-    delete fZJ;
 
     delete fCharBI;
     delete fNumberMatcher;
@@ -3711,9 +3553,6 @@ RBBILineMonkey::~RBBILineMonkey() {
 //                          0 or greater:  run length.
 //
 //       type = char | word | line | sent | title
-//
-//  Example:
-//     intltest  rbbi/RBBITest/TestMonkey@"type=line loop=-1"
 //
 //-------------------------------------------------------------------------------------------
 
@@ -3870,7 +3709,7 @@ void RBBITest::TestWordBreaks(void)
         errcheckln(status, "Creation of break iterator failed %s", u_errorName(status));
         return;
     }
-    for (loop = 0; loop < UPRV_LENGTHOF(strlist); loop ++) {
+    for (loop = 0; loop < (int)(sizeof(strlist) / sizeof(char *)); loop ++) {
         // printf("looping %d\n", loop);
         UnicodeString ustr = CharsToUnicodeString(strlist[loop]);
         // RBBICharMonkey monkey;
@@ -3936,7 +3775,7 @@ void RBBITest::TestWordBoundary(void)
         errcheckln(status, "Creation of break iterator failed %s", u_errorName(status));
         return;
     }
-    for (loop = 0; loop < UPRV_LENGTHOF(strlist); loop ++) {
+    for (loop = 0; loop < (int)(sizeof(strlist) / sizeof(char *)); loop ++) {
         // printf("looping %d\n", loop);
         u_unescape(strlist[loop], str, 20);
         UnicodeString ustr(str);
@@ -3991,6 +3830,7 @@ void RBBITest::TestLineBreaks(void)
      "\\ufe3c\\u201c\\u000d\\u2025\\u2007\\u201c\\u002d\\u20a0\\u002d\\u30a7\\u17a4",
      "\\u2772\\u0020\\U000e010a\\u0020\\u2025\\u000a\\U000e0123",
      "\\u002d\\uff1b\\u02c8\\u2029\\ufeff\\u0f22\\u2044\\ufe09\\u003a\\u096d\\u2009\\u000a\\u06f7\\u02cc\\u1019\\u2060",
+     "\\u1781\\u0b68\\u0f0c\\u3010\\u0085\\U00011f7a\\u0020\\u0dd6\\u200b\\U000e007a\\u000a\\u2060\\u2026\\u002f\\u2026\\u24dc\\u101e\\u2014\\u2007\\u30a5",
      "\\u2770\\u0020\\U000e010f\\u0020\\u2060\\u000a\\u02cc\\u0bcc\\u060d\\u30e7\\u0f3b\\u002f",
      "\\ufeff\\u0028\\u003b\\U00012fec\\u2010\\u0020\\u0004\\u200b\\u0020\\u275c\\u002f\\u17b1",
      "\\u20a9\\u2014\\u00a2\\u31f1\\u002f\\u0020\\u05b8\\u200b\\u0cc2\\u003b\\u060d\\u02c8\\ua4e8\\u002f\\u17d5",
@@ -4006,19 +3846,25 @@ void RBBITest::TestLineBreaks(void)
      "\\u002f\\uf22e\\u1944\\ufe3d\\u0020\\u206f\\u31b3\\u2014\\u002d\\u2025\\u0f0c\\u0085\\u2763",
      "\\u002f\\u2563\\u202f\\u0085\\u17d5\\u200b\\u0020\\U000e0043\\u2014\\u058a\\u3d0a\\ufe57\\u2035\\u2028\\u2029",
      "\\u20ae\\U0001d169\\u9293\\uff1f\\uff1f\\u0021\\u2012\\u2039\\u0085\\u02cc\\u00a2\\u0020\\U000e01ab\\u3085\\u0f3a\\u1806\\u0f0c\\u1945\\u000a\\U0001d7e7",
+     "\\uffe6\\u00a0\\u200b\\u0085\\u2116\\u255b\\U0001d7f7\\u178c\\ufffc",
      "\\u02cc\\ufe6a\\u00a0\\u0021\\u002d\\u7490\\uec2e\\u200b\\u000a",
      "\\uec2e\\u200b\\u000a\\u0020\\u2028\\u2014\\u8945",
      "\\u7490\\uec2e\\u200b\\u000a\\u0020\\u2028\\u2014",
      "\\u0020\\u2028\\u2014\\u8945\\u002c\\u005b",
      "\\u000a\\ufe3c\\u201c\\u000d\\u2025\\u2007\\u201c\\u002d\\u20a0",
+     "\\u2473\\u0e9d\\u0020\\u0085\\u000a\\ufe3c\\u201c\\u000d\\u2025",
      "\\U0001d16e\\ufffc\\u2025\\u0021\\u002d",
      "\\ufffc\\u301b\\u0fa5\\U000e0103\\u2060\\u208e\\u17d5\\u034f\\u1009\\u003a\\u180e\\u2009\\u3111",
+     "\\u2014\\u0020\\u000a\\u17c5\\u24fc",
      "\\ufffc\\u0020\\u2116\\uff6c\\u200b\\u0ac3\\U0001028f",
      "\\uaeb0\\u0344\\u0085\\ufffc\\u073b\\u2010",
      "\\ufeff\\u0589\\u0085\\u0eb8\\u30fd\\u002f\\u003a\\u2014\\ufe43",
      "\\u09cc\\u256a\\u276d\\u002d\\u3085\\u000d\\u0e05\\u2028\\u0fbb",
      "\\u2034\\u00bb\\u0ae6\\u300c\\u0020\\u31f8\\ufffc",
      "\\u2116\\u0ed2\\uff64\\u02cd\\u2001\\u2060",
+         "\\u809d\\u2e02\\u0f0a\\uc48f\\u2540\\u000d\\u0cef\\u003a\\u0e4d"
+         "\\U000e0172\\U000e005c\\u17cf\\U00010ca6\\ufeff\\uf621\\u06f3\\uffe5"
+         "\\u0ea2\\ufeff\\udcea\\u3085\\ua874\\u000a\\u0020\\u000b\\u200b",
      "\\ufe10\\u2060\\u1a5a\\u2060\\u17e4\\ufffc\\ubbe1\\ufe15\\u0020\\u00a0",
          "\\u2060\\u2213\\u200b\\u2019\\uc2dc\\uff6a\\u1736\\u0085\\udb07",
     };
@@ -4027,7 +3873,7 @@ void RBBITest::TestLineBreaks(void)
     if (U_FAILURE(status)) {
         return;
     }
-    for (loop = 0; loop < UPRV_LENGTHOF(strlist); loop ++) {
+    for (loop = 0; loop < (int)(sizeof(strlist) / sizeof(char *)); loop ++) {
         // printf("looping %d\n", loop);
         int32_t t = u_unescape(strlist[loop], str, STRSIZE);
         if (t >= STRSIZE) {
@@ -4097,8 +3943,8 @@ void RBBITest::TestSentBreaks(void)
         errcheckln(status, "Creation of break iterator failed %s", u_errorName(status));
         return;
     }
-    for (loop = 0; loop < UPRV_LENGTHOF(strlist); loop ++) {
-        u_unescape(strlist[loop], str, UPRV_LENGTHOF(str));
+    for (loop = 0; loop < (int)(sizeof(strlist) / sizeof(char *)); loop ++) {
+        u_unescape(strlist[loop], str, (int32_t)(sizeof(str) / sizeof(str[0])));
         UnicodeString ustr(str);
 
         RBBISentMonkey monkey;
@@ -4306,15 +4152,9 @@ void RBBITest::RunMonkey(BreakIterator *bi, RBBIMonkeyKind &mk, const char *name
             int32_t   charIdx = m_rand() % classSet->size();
             UChar32   c = classSet->charAt(charIdx);
             if (c < 0) {   // TODO:  deal with sets containing strings.
-                errln("%s:%d c < 0", __FILE__, __LINE__);
+                errln("c < 0");
                 break;
             }
-            // Do not assemble a supplementary character from randomly generated separate surrogates.
-            //   (It could be a dictionary character)
-            if (U16_IS_TRAIL(c) && testText.length() > 0 && U16_IS_LEAD(testText.charAt(testText.length()-1))) {
-                continue;
-            }
-
             testText.append(c);
         }
 
@@ -4421,7 +4261,7 @@ void RBBITest::RunMonkey(BreakIterator *bi, RBBIMonkeyKind &mk, const char *name
             } else {
                 if (breakPos >= 0) {
                     precedingBreaks[breakPos] = 1;
-                }
+                } 
                 lastBreakPos = breakPos;
             }
         }
@@ -4516,7 +4356,7 @@ void RBBITest::RunMonkey(BreakIterator *bi, RBBIMonkeyKind &mk, const char *name
                 errorText.extract(charErrorTxt, sizeof(charErrorTxt), NULL, status);
                 charErrorTxt[sizeof(charErrorTxt)-1] = 0;
                 const char *badLocale = bi->getLocaleID(ULOC_ACTUAL_LOCALE, status);
-
+                
                 errln("%s break monkey test error [%s].  %s. Operation = %s; Random seed = %d;  buf Idx = %d\n%s",
                     name, badLocale, (expectedBreaks[i]? "break expected but not found" : "break found but not expected"),
                     errorType, seed, i, charErrorTxt);
@@ -4539,15 +4379,15 @@ void RBBITest::TestBug5532(void)  {
    // Text includes a mixture of Thai and Latin.
    const unsigned char utf8Data[] = {
            0xE0u, 0xB8u, 0x82u, 0xE0u, 0xB8u, 0xB2u, 0xE0u, 0xB8u, 0xA2u, 0xE0u,
-           0xB9u, 0x80u, 0xE0u, 0xB8u, 0x84u, 0xE0u, 0xB8u, 0xA3u, 0xE0u, 0xB8u,
+           0xB9u, 0x80u, 0xE0u, 0xB8u, 0x84u, 0xE0u, 0xB8u, 0xA3u, 0xE0u, 0xB8u, 
            0xB7u, 0xE0u, 0xB9u, 0x88u, 0xE0u, 0xB8u, 0xADu, 0xE0u, 0xB8u, 0x87u,
            0xE0u, 0xB9u, 0x80u, 0xE0u, 0xB8u, 0xA5u, 0xE0u, 0xB9u, 0x88u, 0xE0u,
            0xB8u, 0x99u, 0xE0u, 0xB8u, 0x8Bu, 0xE0u, 0xB8u, 0xB5u, 0xE0u, 0xB8u,
-           0x94u, 0xE0u, 0xB8u, 0xB5u, 0x20u, 0x73u, 0x69u, 0x6Du, 0x20u, 0x61u,
-           0x75u, 0x64u, 0x69u, 0x6Fu, 0x2Fu, 0x20u, 0x4Du, 0x4Fu, 0x4Fu, 0x4Eu,
-           0x20u, 0x65u, 0x63u, 0x6Cu, 0x69u, 0x70u, 0x73u, 0x65u, 0x20u, 0xE0u,
-           0xB8u, 0xA3u, 0xE0u, 0xB8u, 0xB2u, 0xE0u, 0xB8u, 0x84u, 0xE0u, 0xB8u,
-           0xB2u, 0x20u, 0x34u, 0x37u, 0x30u, 0x30u, 0x20u, 0xE0u, 0xB8u, 0xA2u,
+           0x94u, 0xE0u, 0xB8u, 0xB5u, 0x20u, 0x73u, 0x69u, 0x6Du, 0x20u, 0x61u, 
+           0x75u, 0x64u, 0x69u, 0x6Fu, 0x2Fu, 0x20u, 0x4Du, 0x4Fu, 0x4Fu, 0x4Eu, 
+           0x20u, 0x65u, 0x63u, 0x6Cu, 0x69u, 0x70u, 0x73u, 0x65u, 0x20u, 0xE0u, 
+           0xB8u, 0xA3u, 0xE0u, 0xB8u, 0xB2u, 0xE0u, 0xB8u, 0x84u, 0xE0u, 0xB8u, 
+           0xB2u, 0x20u, 0x34u, 0x37u, 0x30u, 0x30u, 0x20u, 0xE0u, 0xB8u, 0xA2u, 
            0xE0u, 0xB8u, 0xB9u, 0xE0u, 0xB9u, 0x82u, 0xE0u, 0xB8u, 0xA3u, 0x00};
 
     UErrorCode status = U_ZERO_ERROR;
@@ -4604,7 +4444,7 @@ void RBBITest::TestBug9983(void)  {
         rstatus = brkiter->getRuleStatus();
         (void)rstatus;     // Suppress set but not used warning.
         if (iterationCount >= 10) {
-           break;
+           break; 
         }
     }
     TEST_ASSERT(iterationCount == 6);
@@ -4617,7 +4457,7 @@ void RBBITest::TestBug9983(void)  {
         rstatus = brkiterPOSIX->getRuleStatus();
         (void)rstatus;     // Suppress set but not used warning.
         if (iterationCount >= 10) {
-           break;
+           break; 
         }
     }
     TEST_ASSERT(iterationCount == 6);
