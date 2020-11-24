@@ -8,8 +8,18 @@ mkdir -p build-host && cd build-host && gnumake
 
 cd $ICU_ROOT
 
-./configure_x86_64.sh
-mkdir -p build-x86_64 && cd build-x86_64 && gnumake
+# ./configure_x86_64.sh
+# mkdir -p build-x86_64 && cd build-x86_64 && gnumake
+
+# cd $ICU_ROOT
+
+./configure_i386.sh
+mkdir -p build-i386 && cd build-i386 && gnumake
+
+cd $ICU_ROOT
+
+./configure_x86_64_catalist.sh
+mkdir -p build-x86_64_catalist && cd build-x86_64_catalist && gnumake
 
 cd $ICU_ROOT
 
@@ -28,6 +38,6 @@ mkdir -p build-arm64 && cd build-arm64 && gnumake
 
 cd $ICU_ROOT
 
-echo "Combining x86 64, armv7, armv7s, and arm64 libraries."
+# echo "Combining x86 64, armv7, armv7s, and arm64 libraries."
 
-./make_universal.sh
+# ./make_universal.sh
